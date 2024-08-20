@@ -1,0 +1,51 @@
+
+services:
+  mysql_db:
+    container_name: mysql_con
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: ecom
+      MYSQL_USER: root
+      MYSQL_PASSWORD: pawan@7697
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    
+  phpmyadmin:
+    container_name: phpmyadmin_con
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql_db
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql_db
+
+  django_project:
+    container_name: django_con
+    image: django-img
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command: bash -c "python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+  
+    depends_on:
+      - mysql_db
+    environment:
+      - DATABASE_HOST=mysql_db
+      - DATABASE_NAME=ecom
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=pawan@7697
+
+volumes:
+  db_data:
+
